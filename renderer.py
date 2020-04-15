@@ -9,6 +9,7 @@ buddhaposx, buddhaposy, buddhacount, buddhay, buddhax, imgx, imgy, xpostable, yp
 	global result
 	global counter
 	global repeatcount
+	global c
 	counter = 0
 	if julia == False:
 		c = complex(currentrealpos, currentimagpos) #complex number used when --julia arg not present
@@ -43,7 +44,7 @@ buddhaposx, buddhaposy, buddhacount, buddhay, buddhax, imgx, imgy, xpostable, yp
 			buddhacount, buddhaposx, buddhaposy = 0, 0 - (pixelspacing * (length[0] / 2)), 0 - (pixelspacing * (height[0] / 2)) #Prepares for buddhabrot array modification
 		if pow(x.real, 2) + pow(real2, 2) > 4: break # Determines escape values quicker
 
-def Coloring(decolorize, edge, buddha, iters, length, height, arraytransfercount, xpostable, ypostable, incamount):
+def Coloring(decolorize, edge, buddha, iters, length, height, arraytransfercount, xpostable, ypostable, incamount, c):
 	global result
 	global counter
 	global color
@@ -70,26 +71,29 @@ def Coloring(decolorize, edge, buddha, iters, length, height, arraytransfercount
 				if decolorize:
 					(color) = "white" #In case of decolorize argument, the exterior colors will be set to white
 				else:
-					if counterval != counter and edge: #Detects if a change in the iteration values exists, and if so, a white color will be displayed
+					if counterval != counter and edge and smooth == False: #Detects if a change in the iteration values exists, and if so, a white color will be displayed
 						color = "white" 
 						counterval = counter
-					if counterval != counter and invedge: #Detects if a change in the iteration values exists, and if so, a black color will be displayed
+					if counterval != counter and invedge and smooth == False: #Detects if a change in the iteration values exists, and if so, a black color will be displayed
 						color = "black" 
 						counterval = counter
-					if edge == False and invedge == False: #Determines point color with table
-						(modulus) = (counter) % 8 
+					if edge == False and invedge == False and smooth == False: #Determines point color with table
+						(modulus) = (counter) % 8
 						colorlookup = ["Black", "Red", "Orange", "Yellow", "Green", "Blue", "Violet", "Gray"]
 						(color) = colorlookup[modulus]
-					if edge and counterval == counter and color == 0: #Chooses black if no iter change is present
+					if edge and counterval == counter and color == 0 and smooth == False: #Chooses black if no iter change is present
 						color = "black"
 						counterval = counter
-					if invedge and counterval == counter and color == 0: #Chooses white if no iter change is present
+					if invedge and counterval == counter and color == 0 and smooth == False: #Chooses white if no iter change is present
 						color = "white"
 						counterval = counter
-					if invgrayscale:
+					if invgrayscale and smooth == False:
 						color = (math.floor(255 - counter * (255/iters[0])), math.floor(255 - counter * (255/iters[0])), math.floor(255 - counter * (255/iters[0])))
-					if grayscale:
+					if grayscale and smooth == False:
 						color = (math.floor(counter * (255/iters[0])), math.floor(counter * (255/iters[0])), math.floor(counter * (255/iters[0])))
+					if smooth:
+						colorlookupsmooth = ["#0000FF", "#0500F9", "#0A00F4", "#0F00EF", "#1400EA", "#1900E5", "#1E00E0", "#2300DB", "#2800D6", "#2D00D1", "#3300CC", "#3800C6", "#3D00C1", "#4200BC", "#4700B7", "#4C00B2", "#5100AD", "#5600A8", "#5B00A3", "#60009E", "#660099", "#6B0093", "#70008E", "#750089", "#7A0084", "#7F007F", "#84007A", "#890075", "#8E0070", "#93006B", "#990066", "#9E0060", "#A3005B", "#A80056", "#AD0051", "#B2004C", "#B70047", "#BC0042", "#C1003D", "#C60038", "#CC0032", "#D1002D", "#D60028", "#DB0023", "#E0001E", "#E50019", "#EA0014", "#EF000F", "#F4000A", "#F90005"]
+						color = colorlookupsmooth[math.floor((((counter+1)-math.log(abs((math.log(abs(c.real + c.imag))/power[0]))/(math.log(power[0])))/(math.log(power[0])))*1)%50)]
 						
 def MainRenderer(brot, ship, julia, buddha, length, height, power, pixelspacing, currentrealpos, currentimagpos, leftside, buddhay, buddhax, imgx, imgy, x, counter, draw, realminusfourth, secondbulb, grayscale):
 	global color
@@ -106,10 +110,13 @@ def MainRenderer(brot, ship, julia, buddha, length, height, power, pixelspacing,
 			else:
 				IterativeFunction(brot, ship, tri, julia, buddha, real, imag, iters, length, height, power, pixelspacing, currentrealpos, currentimagpos, 
 				buddhaposx, buddhaposy, buddhacount, buddhay, buddhax, imgx, imgy, xpostable, ypostable, x)
-				Coloring(decolorize, edge, buddha, iters, length, height, arraytransfercount, xpostable, ypostable, incamount)
+				Coloring(decolorize, edge, buddha, iters, length, height, arraytransfercount, xpostable, ypostable, incamount, c)
 				global colortransfer
 				if buddha == False: #Colors the image in absence of buddhabrot variable
 					draw.point((imgx, imgy), color)
+					if mirror == True:
+						draw.point((imgx, height[0]-imgy), color)
+						if imgy==((math.ceil(height[0]))/2+1):return
 			imgx = imgx + 1
 			currentrealpos, buddhax = currentrealpos + pixelspacing, buddhax + 1 #sets variables for next pixel on x axis
 			result, real2, y, x, counter, modulus, color = 0, 0, 0, 0, 0, 0, 0
@@ -153,12 +160,14 @@ parser.add_argument('--edge', help='Enables edge detection.', action='store_true
 parser.add_argument('--invedge', help='Black on white edge detection, oppsite of white on black.', action='store_true')
 parser.add_argument('--grayscale', help='Replaces colors with a dynamic grayscale.', action='store_true')
 parser.add_argument('--invgrayscale', help='Inverse of a black to white grayscale, white to black.', action='store_true')
+parser.add_argument('--smooth', help='--EXPERIMENTAL-- Uses normalized iteration count coloring.', action='store_true')
+parser.add_argument('--mirror', help='Horizontal mirroring, useful on symmetrical Fractals.', action='store_true')
 parser.add_argument('--buddha', help='Renders using the buddhabrot method.', action='store_true')
 parser.add_argument('--nebula', help='Renders a color variant of the buddhabrot.', action='store_true')
 args = parser.parse_args() #Initializes cmd interface and defines arguments
 global colorarray
 real, imag, iters, zoom, length, height, power, timestart, filename = args.real, args.imag, args.iters, args.zoom, args.length, args.height, args.pow, time.process_time(), args.filename + '.png'
-brot, ship, tri, julia, decolorize, edge, buddha, nebula, grayscale, invgrayscale, invedge, vlambda, PerpBrot = args.brot, args.ship, args.tri, args.julia, args.decolorize, args.edge, args.buddha, args.nebula, args.grayscale, args.invgrayscale, args.invedge, args.vlambda, args.perpbrot
+brot, ship, tri, julia, decolorize, edge, buddha, nebula, grayscale, invgrayscale, invedge, vlambda, PerpBrot, smooth, mirror = args.brot, args.ship, args.tri, args.julia, args.decolorize, args.edge, args.buddha, args.nebula, args.grayscale, args.invgrayscale, args.invedge, args.vlambda, args.perpbrot, args.smooth, args.mirror
 refrence, dividedtwo, explevel, pixelspacing, currentrealpos, currentimagpos, leftside, counter2 = 2, 2, 2, 0, 0, 0, 0, 0 #sets variables
 while zoom[0] >= explevel and zoom[0] >= 2:
 	(explevel) = (explevel) * 2
