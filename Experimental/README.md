@@ -11,3 +11,6 @@ The peridoicity checking code checks the previous 2 values of the complex number
 # On the fast code
 The faster code utilizes multiplication and addition in the formulas to utilize the faster calculation methods over exponentiation    
 However, it does this through more variables, and as such, uses more memory, not making any drastic time saves
+
+# Extra
+I also at one point had code that was about experimental as it could get, and would attempt to render fractals using a box filling method, where a box outline would be drawn, if it's outline was one color, it would get filled in, while if it was not uniform, it would be split into four new boxes. I trashed it because it didn't work, but I may [that's a big may] attempt to reimplement it at some point.
