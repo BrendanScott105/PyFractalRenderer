@@ -27,6 +27,8 @@ buddhaposx, buddhaposy, buddhacount, buddhay, buddhax, imgx, imgy, xpostable, yp
 			(result) = ((pow((x),power[0]))*-c)+c
 		if PerpBrot:
 			(result) = pow(abs(x.real)-(1j*x.imag), power[0])+c
+		if apple:
+			(result) = x - ((pow(x,3)+((c-1)*x)-c)/((3*pow(x,2)+c)-1))
 		(x) = (result)
 		(counter) = (counter) + 1
 		(real2) = x.imag
@@ -102,7 +104,7 @@ def MainRenderer(brot, ship, julia, buddha, length, height, power, pixelspacing,
 			if power[0] == 2 and brot and julia == False:
 				realminusfourth = math.sqrt((pow((currentrealpos - 1/4),2))+pow(currentimagpos,2)) #cardioid check
 				secondbulb = pow((currentrealpos+1),2)+pow(currentimagpos,2)
-			if ship == False and power[0] == 2 and ((currentrealpos < realminusfourth - (2*pow(realminusfourth,2)) + .25) or secondbulb < 1/16) and julia == False and brot == True and vlambda == False and PerpBrot == False:
+			if ship == False and power[0] == 2 and ((currentrealpos < realminusfourth - (2*pow(realminusfourth,2)) + .25) or secondbulb < 1/16) and julia == False and brot == True and vlambda == False and PerpBrot == False and apple == False:
 				color = "black" #Sets color to black if cardioid check returns true
 				if grayscale or invedge:
 					color = "white"
@@ -154,6 +156,7 @@ parser.add_argument('--ship' ,help='Renders the Burning ship.', action='store_tr
 parser.add_argument('--tri' ,help='Renders the Tricorn.', action='store_true')
 parser.add_argument('--vlambda' ,help='Renders a mix between a julia and mandelbrot set.', action='store_true')
 parser.add_argument('--perpbrot' ,help='Renders the Perpendicular Mandelbrot.', action='store_true')
+parser.add_argument('--apple' ,help='Renders the "Newtonian apple".', action='store_true')
 parser.add_argument('--julia' ,help='Renders a julia with the given real, imag, and fractal type.', action='store_true')
 parser.add_argument('--decolorize' ,help='Sets exterior color to white.', action='store_true')
 parser.add_argument('--edge', help='Enables edge detection.', action='store_true')
@@ -167,7 +170,7 @@ parser.add_argument('--nebula', help='Renders a color variant of the buddhabrot.
 args = parser.parse_args() #Initializes cmd interface and defines arguments
 global colorarray
 real, imag, iters, zoom, length, height, power, timestart, filename = args.real, args.imag, args.iters, args.zoom, args.length, args.height, args.pow, time.process_time(), args.filename + '.png'
-brot, ship, tri, julia, decolorize, edge, buddha, nebula, grayscale, invgrayscale, invedge, vlambda, PerpBrot, smooth, mirror = args.brot, args.ship, args.tri, args.julia, args.decolorize, args.edge, args.buddha, args.nebula, args.grayscale, args.invgrayscale, args.invedge, args.vlambda, args.perpbrot, args.smooth, args.mirror
+brot, ship, tri, julia, decolorize, edge, buddha, nebula, grayscale, invgrayscale, invedge, vlambda, PerpBrot, smooth, mirror, apple = args.brot, args.ship, args.tri, args.julia, args.decolorize, args.edge, args.buddha, args.nebula, args.grayscale, args.invgrayscale, args.invedge, args.vlambda, args.perpbrot, args.smooth, args.mirror, args.apple
 refrence, dividedtwo, explevel, pixelspacing, currentrealpos, currentimagpos, leftside, counter2 = 2, 2, 2, 0, 0, 0, 0, 0 #sets variables
 while zoom[0] >= explevel and zoom[0] >= 2:
 	(explevel) = (explevel) * 2
